@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "GCal Duration Badge",
+  "version": "1.0.0",
+  "description": "Shows event duration on Google Calendar blocks",
+
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://calendar.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
