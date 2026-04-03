@@ -5,15 +5,20 @@ See event durations instantly inside Google Calendar — clean, fast, and reliab
 
 ---
 
-## ✨ Features
+### ✨ Features
+- ⏱ Shows duration for all calendar events
+- 🎯 Clean badge UI (non-intrusive)
+- 🚫 Hides badges for short events (<45 min)
+- ⚡ Optimized for performance (no lag)
 
-- ⏱ Shows event duration directly on calendar blocks
-- 🧠 Smart filtering (hides short events under 45 minutes)
-- 🧩 Works across different event types (including tasks)
-- 🎯 Clean, minimal, non-intrusive UI
-- ⚡ Lightweight and optimized for performance
-- 🔄 Stable across navigation (week/day switching)
-
+### 🆕 Live Countdown (v2.0.0)
+- ⌛ Shows **remaining time** when event is active
+- Updates automatically every minute
+- Only activates for the **current ongoing event**
+- Example:
+  - Before event → `2h`
+  - During event → `⌛ 1h 45m left`
+  - After event → `2h`
 ---
 
 ## 🚀 Why this extension?
