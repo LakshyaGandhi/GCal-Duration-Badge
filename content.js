@@ -2,9 +2,6 @@
   if (window.__gcal_duration_ext_active) return;
   window.__gcal_duration_ext_active = true;
 
-  // ------------------------
-  // ⏱ Parse Duration (with minutes)
-  // ------------------------
   function parseDuration(text) {
     const match = text.match(/(\d+(?::\d+)?)(am|pm)?\s+to\s+(\d+(?::\d+)?)(am|pm)/i);
     if (!match) return null;
@@ -41,34 +38,34 @@
     };
   }
 
-  // ------------------------
-  // 🚫 Skip popup dialogs
-  // ------------------------
   function isInPopup(el) {
     return el.closest('[role="dialog"]');
   }
 
-  // ------------------------
-  // 🎯 Inject badge
-  // ------------------------
   function inject(chip) {
     if (!chip) return;
     if (isInPopup(chip)) return;
 
-    // Avoid duplicate badge
     if (chip.querySelector('.__duration_badge')) return;
 
     const textEl = chip.querySelector('.XuJrye');
     if (!textEl) return;
 
     const text = textEl.innerText || '';
+
+    // 🔥 NEW: skip all-day
+    if (/all day/i.test(text)) return;
+
     if (!/to/i.test(text)) return;
 
     const result = parseDuration(text);
     if (!result) return;
 
-    // 🔥 Skip events shorter than 45 min
+    // 🔥 skip short events
     if (result.minutes < 45) return;
+
+    // 🔥 NEW: skip tiny UI blocks
+    if (chip.offsetHeight < 20) return;
 
     const duration = result.label;
 
@@ -79,12 +76,10 @@
 
     if (!container) return;
 
-    // Ensure safe positioning
     if (getComputedStyle(container).position === 'static') {
       container.style.position = 'relative';
     }
 
-    // Skip invisible (during animation)
     if (chip.offsetHeight === 0) return;
 
     const badge = document.createElement('div');
@@ -109,9 +104,6 @@
     container.appendChild(badge);
   }
 
-  // ------------------------
-  // ⚡ Efficient update cycle
-  // ------------------------
   let rafId = null;
 
   function handleMutations() {
@@ -119,14 +111,10 @@
 
     rafId = requestAnimationFrame(() => {
       rafId = null;
-
       document.querySelectorAll('[data-eventchip]').forEach(inject);
     });
   }
 
-  // ------------------------
-  // 👀 Observe DOM
-  // ------------------------
   const observer = new MutationObserver(handleMutations);
 
   observer.observe(document.body, {
@@ -134,7 +122,6 @@
     subtree: true
   });
 
-  // Initial run
   handleMutations();
 
   console.log("🚀 FINAL stable optimized version running");
