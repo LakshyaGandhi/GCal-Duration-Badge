@@ -2,31 +2,52 @@
   if (window.__gcal_duration_ext_active) return;
   window.__gcal_duration_ext_active = true;
 
-  function parseDuration(text) {
-    const match = text.match(/(\d+(?::\d+)?)(am|pm)?\s+to\s+(\d+(?::\d+)?)(am|pm)/i);
-    if (!match) return null;
+  const activeBadges = new Set();
 
-    let [, startRaw, startMer, endRaw, endMer] = match;
+  // ------------------------
+  // 📅 Extract DATE from text
+  // ------------------------
+  function extractDate(text) {
+    const match = text.match(/([A-Za-z]+ \d{1,2}, \d{4})/);
+    if (!match) return null;
+    return new Date(match[1]);
+  }
+
+  // ------------------------
+  // ⏱ Parse Duration + REAL date
+  // ------------------------
+  function parseDuration(text) {
+    const timeMatch = text.match(/(\d+(?::\d+)?)(am|pm)?\s+to\s+(\d+(?::\d+)?)(am|pm)/i);
+    if (!timeMatch) return null;
+
+    let [, startRaw, startMer, endRaw, endMer] = timeMatch;
 
     endMer = endMer.toLowerCase();
     startMer = (startMer || endMer).toLowerCase();
 
-    const toMins = (raw, mer) => {
+    const baseDate = extractDate(text);
+    if (!baseDate) return null;
+
+    const toDateTime = (raw, mer) => {
       const [h, m = 0] = raw.split(':').map(Number);
       let hrs = h % 12;
       if (mer === 'pm') hrs += 12;
-      return hrs * 60 + Number(m);
+
+      const d = new Date(baseDate);
+      d.setHours(hrs, m, 0, 0);
+      return d;
     };
 
-    let start = toMins(startRaw, startMer);
-    let end = toMins(endRaw, endMer);
+    let startDate = toDateTime(startRaw, startMer);
+    let endDate = toDateTime(endRaw, endMer);
 
-    if (start >= end) {
+    // Handle AM/PM flip
+    if (startDate >= endDate) {
       startMer = startMer === 'am' ? 'pm' : 'am';
-      start = toMins(startRaw, startMer);
+      startDate = toDateTime(startRaw, startMer);
     }
 
-    const diff = end - start;
+    const diff = (endDate - startDate) / 60000;
     if (diff <= 0) return null;
 
     const h = Math.floor(diff / 60);
@@ -34,7 +55,9 @@
 
     return {
       label: m === 0 ? `${h}h` : `${h}h ${m}m`,
-      minutes: diff
+      minutes: diff,
+      startDate,
+      endDate
     };
   }
 
@@ -42,6 +65,7 @@
     return el.closest('[role="dialog"]');
   }
 
+  // ------------------------
   function inject(chip) {
     if (!chip) return;
     if (isInPopup(chip)) return;
@@ -53,21 +77,14 @@
 
     const text = textEl.innerText || '';
 
-    // 🔥 NEW: skip all-day
     if (/all day/i.test(text)) return;
-
     if (!/to/i.test(text)) return;
 
     const result = parseDuration(text);
     if (!result) return;
 
-    // 🔥 skip short events
     if (result.minutes < 45) return;
-
-    // 🔥 NEW: skip tiny UI blocks
     if (chip.offsetHeight < 20) return;
-
-    const duration = result.label;
 
     const container =
       textEl.closest('.NlL62b') ||
@@ -80,11 +97,8 @@
       container.style.position = 'relative';
     }
 
-    if (chip.offsetHeight === 0) return;
-
     const badge = document.createElement('div');
     badge.className = '__duration_badge';
-    badge.textContent = duration;
 
     badge.style.cssText = `
       position: absolute;
@@ -102,8 +116,47 @@
     `;
 
     container.appendChild(badge);
+
+    badge.__eventData = result;
+    activeBadges.add(badge);
+
+    updateBadge(badge);
   }
 
+  // ------------------------
+  function updateBadge(badge) {
+    const data = badge.__eventData;
+    if (!data) return;
+
+    const now = new Date();
+    const { startDate, endDate, label } = data;
+
+    // Only show countdown if NOW is inside event
+    if (now >= startDate && now <= endDate) {
+      const mins = Math.floor((endDate - now) / 60000);
+
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+
+      const text = m === 0 ? `${h}h left` : `${h}h ${m}m left`;
+      badge.textContent = `⌛ ${text}`;
+    } else {
+      badge.textContent = label;
+    }
+  }
+
+  // ------------------------
+  setInterval(() => {
+    activeBadges.forEach((badge) => {
+      if (!document.body.contains(badge)) {
+        activeBadges.delete(badge);
+        return;
+      }
+      updateBadge(badge);
+    });
+  }, 60000);
+
+  // ------------------------
   let rafId = null;
 
   function handleMutations() {
@@ -124,5 +177,5 @@
 
   handleMutations();
 
-  console.log("🚀 FINAL stable optimized version running");
+  console.log("🚀 FINAL FIXED VERSION (real date-aware countdown)");
 })();
