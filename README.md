@@ -28,8 +28,10 @@ Many existing solutions for showing durations in Google Calendar are either:
 - inconsistent
 - partially working
 - or not optimized for performance
-
-This extension was built to provide a **fully reliable and smooth experience** across all event types.
+- don’t show duration properly
+- or don’t support tasks
+- or are inconsistent
+This extension was built to provide a **fully reliable and smooth experience** across all event types as well as tasks.
 
 ---
 
