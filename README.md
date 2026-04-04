@@ -1,4 +1,4 @@
-# GCal-Duration-Badge
+# Google Calendar Duration Badge Extension (Live Countdown)
 Chrome extension to show event durations on Google Calendar
 
 See event durations instantly inside Google Calendar — clean, fast, and reliable.
