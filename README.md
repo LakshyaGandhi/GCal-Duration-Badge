@@ -2,6 +2,7 @@
 Chrome extension to show event durations on Google Calendar
 
 See event durations instantly inside Google Calendar — clean, fast, and reliable.
+<img width="610" height="620" alt="image" src="https://github.com/user-attachments/assets/7723e064-e373-448e-bcc0-f0c93702acfd" />
 
 ---
 
